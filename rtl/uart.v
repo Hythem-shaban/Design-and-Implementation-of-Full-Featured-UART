@@ -1,9 +1,9 @@
 module uart#(
   parameter CLK_FREQ = 50_000_000,
-  parameter BAUD_RATE = 19200,
+  parameter BAUD_RATE = 1200,
   parameter SAMPLING_RATE = 16,
   parameter DBITS = 8,
-  parameter SBITS = 1,
+  parameter SBITS = 2,
   parameter FIFO_DEPTH = 8
 )(
   input  wire             i_clk,
@@ -11,11 +11,16 @@ module uart#(
   input  wire             i_wr_uart,
   input  wire             i_rd_uart,
   input  wire [DBITS-1:0] i_wr_data,
+  input  wire [1:0]       i_bd_rate,
+  input  wire             i_d_num,
+  input  wire             i_s_num,
+  input  wire [1:0]       i_par,
   input  wire             i_rx,
   output wire             o_tx,
   output wire             o_rx_empty,
   output wire             o_tx_full,
   output wire             o_rx_full,
+  output wire [2:0]       o_err,
   output wire [DBITS-1:0] o_rd_data
 );
 
@@ -35,6 +40,7 @@ module uart#(
   ) baud_rate_generator_u(
     .i_clk(i_clk),
     .i_rst_n(i_rst_n),
+    .i_bd_rate(i_bd_rate),
     .o_tick(s_tick)
   );
 
@@ -62,6 +68,9 @@ module uart#(
     .i_tx_start(tx_fifo_not_empty),
     .i_tx_data(tx_fifo_rd_data),
     .i_s_tick(s_tick),
+    .i_d_num(i_d_num),
+    .i_s_num(i_s_num),
+    .i_par(i_par),
     .o_tx_done(tx_fifo_rd),
     .o_tx(o_tx)
   );
@@ -89,6 +98,10 @@ module uart#(
     .i_rst_n(i_rst_n),
     .i_rx(i_rx),
     .i_s_tick(s_tick),
+    .i_d_num(i_d_num),
+    .i_s_num(i_s_num),
+    .i_par(i_par),
+    .o_err(o_err),
     .o_rx_done(rx_fifo_wr),
     .o_rx_data(rx_fifo_wr_data)
   );
